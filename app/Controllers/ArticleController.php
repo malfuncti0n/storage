@@ -20,9 +20,7 @@ class ArticleController extends Controller
         }
 
         //else get response body and send response in json format
-        $body = $response->getBody();
-        $body->write(json_encode($articleBody));
-        return $this->response->withBody($body);
+        return $this->jsonResponse($articleBody, 200, $response);
     }
 
 
