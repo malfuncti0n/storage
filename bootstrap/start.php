@@ -8,8 +8,7 @@ use Noodlehaus\Config;
 
 $config = new Config(__DIR__ . '/../app/config');
 
-//default container
-$container = new \Slim\Container([
+$app = new \Slim\App([
     'settings' => [
         'displayErrorDetails' => true,
         'db' => [
@@ -25,8 +24,9 @@ $container = new \Slim\Container([
         'determineRouteBeforeAppMiddleware' => true
     ],
 ]);
-var_dump($container);
 
+
+$container = $app->getContainer();
 //database connections
 
 $capsule = new \Illuminate\Database\Capsule\Manager;
@@ -35,12 +35,6 @@ $capsule->setAsGlobal();
 $capsule->bootEloquent();
 
 $container['db'] = function ($container) use ($capsule){
-    return $capsule;
 };
-
-//initialized our app that extend slim
-$app = new \App\App($container);
-
-
 
 require __DIR__ . '/../app/routes.php';
