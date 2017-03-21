@@ -2,11 +2,15 @@
 
 namespace App\Controllers;
 
+use App\Models\Article;
+
 class ArticleController extends Controller
 {
     public function get($id)
     {
-     die($id);
+    //$article=Articles::find($id);
+        die($id);
+     //die($article);
     }
 
     public function post(){
