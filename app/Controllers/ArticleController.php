@@ -19,7 +19,7 @@ class ArticleController extends Controller
             return $this->response->withStatus(404);
         }
 
-        //else get response body and send response in json format
+        //else we response with the body in json format
         return $this->jsonResponse($articleBody, 200, $response);
     }
 
