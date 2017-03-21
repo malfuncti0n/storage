@@ -37,4 +37,9 @@ $capsule->bootEloquent();
 $container['db'] = function ($container) use ($capsule){
 };
 
+$container['ArticleController'] = function ($container){
+    return new \App\Controllers\ArticleController($container);
+};
+
+
 require __DIR__ . '/../app/routes.php';
