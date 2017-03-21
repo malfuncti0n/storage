@@ -8,4 +8,8 @@ class ArticleController extends Controller
     {
      die($id);
     }
+
+    public function post(){
+        die('post');
+    }
 }
