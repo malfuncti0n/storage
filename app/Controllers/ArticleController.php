@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Models\Article;
 
+use App\Presenters\ArticlePresenter;
+
 class ArticleController extends Controller
 {
 
@@ -17,11 +19,11 @@ class ArticleController extends Controller
 
         //if article not found redirect back with 404 status
         if(!$articleBody){
-            return $this->response->withStatus(404);
+            return $this->fastResponse(null,404);
         }
 
         //else get response body and send response in json format
-        return $this->jsonResponse($articleBody, 200, $response);
+        return $this->fastResponse((new ArticlePresenter($articleBody))->present(), 200, $response);
     }
 
 

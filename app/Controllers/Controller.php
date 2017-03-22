@@ -29,9 +29,9 @@ class Controller
     }
 
     //helper function for json encoding and faster response
-    public function jsonResponse($content = '', $httpStatus = 200, $response){
+    public function fastResponse($content = '', $httpStatus = 200, $response){
         $body = $response->getBody();
-        $body->write(json_encode($content));
+        $body->write($content);
         return $this->response->withStatus($httpStatus)->withBody($body);
     }
 
