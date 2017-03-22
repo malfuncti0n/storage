@@ -11,7 +11,7 @@ class ArticleController extends Controller
 
     public function get($request, $response)
     {
-    //get article id
+        //get article id
         $routeParams = $request->getAttribute('routeInfo')[2];
         //find in database
         $article=new Article;
@@ -21,14 +21,16 @@ class ArticleController extends Controller
         if(!$articleBody){
             return $this->fastResponse(null,404);
         }
-
         //else get response body and send response in json format
         return $this->fastResponse((new ArticlePresenter($articleBody))->present(), 200, $response);
     }
 
 
     public function post($request, $response){
-        die('post');
+        $json = $this->request->getBody();
+        $data = json_decode($json, true);
+        var_dump($data);
+
     }
 
     public function put($request, $response){
