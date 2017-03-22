@@ -4,7 +4,17 @@ namespace App\Controllers;
 
 class Controller
 {
+    protected $_methods=[
+        'GET',
+        'POST',
+        'PUT',
+        'DELETE'
+    ];
+
+
+
     protected $container;
+
     public function __construct($container)
     {
         $this->container = $container;
@@ -23,5 +33,16 @@ class Controller
         $body = $response->getBody();
         $body->write(json_encode($content));
         return $this->response->withStatus($httpStatus)->withBody($body);
+    }
+
+     //get all routes on current controller and call the apropriate method if allowed
+      public function getCall($request, $response){
+        if(!in_array($method=$request->getMethod(),$this->_methods)){
+            //if method not in array not allowed
+            return $this->response->withStatus(405);
+        }
+        //call dynamically apropriate method
+        $this->$method($request, $response);
+
     }
 }

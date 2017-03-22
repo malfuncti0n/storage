@@ -6,6 +6,7 @@ use App\Models\Article;
 
 class ArticleController extends Controller
 {
+
     public function get($request, $response)
     {
     //get article id
@@ -24,15 +25,15 @@ class ArticleController extends Controller
     }
 
 
-    public function post(){
+    public function post($request, $response){
         die('post');
     }
 
-    public function put($id){
-        die($id);
+    public function put($request, $response){
+       die('put');
     }
 
-    public function delete($id){
-        die($id);
+    public function delete($request, $response){
+        die('delete');
     }
 }
