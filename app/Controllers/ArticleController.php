@@ -18,8 +18,8 @@ class ArticleController extends Controller
         $articleBody=$article->find($routeParams['id']);
 
         //if article not found redirect back with 404 status
-        if(!$articleBody){
-            return $this->fastResponse(null,404);
+        if(empty($articleBody)){
+            return $this->fastResponse(null,404 ,$response);
         }
         //else get response body and send response in json format
         return $this->fastResponse((new ArticlePresenter($articleBody))->present(), 200, $response);
