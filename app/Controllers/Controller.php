@@ -32,6 +32,7 @@ class Controller
     public function fastResponse($content = '', $httpStatus = 200, $response){
         $body = $response->getBody();
         $body->write($content);
+
         return $this->response->withStatus($httpStatus)->withBody($body);
     }
 
@@ -42,7 +43,7 @@ class Controller
             return $this->response->withStatus(405);
         }
         //call dynamically apropriate method
-        $this->$method($request, $response);
+        return $this->$method($request, $response);
 
     }
 }
