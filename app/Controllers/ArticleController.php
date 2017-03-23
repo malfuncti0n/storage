@@ -29,7 +29,11 @@ class ArticleController extends Controller
     public function post($request, $response){
         $json = $this->request->getBody();
         $data = json_decode($json, true);
-        var_dump($data);
+        $article = new Article;
+        $article->title=$data['title'];
+        $article->body=$data['body'];
+        $article->save();
+        return $this->fastResponse((new ArticlePresenter($article))->present(), 200, $response);
 
     }
 
