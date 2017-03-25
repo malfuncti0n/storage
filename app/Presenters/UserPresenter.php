@@ -8,7 +8,7 @@ class UserPresenter extends BasePresenter{
             'id' => $this->data->id,
             'email' => $this->data->email,
             'username' => $this->data->username,
-            'firstname' => $tis->data->firstname,
+            'firstname' => $this->data->firstname,
             'lastname' => $this->data->lastname,
             'User created' => $this->data->created_at
         ];

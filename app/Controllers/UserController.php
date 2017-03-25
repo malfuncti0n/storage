@@ -12,7 +12,18 @@ class UserController extends Controller
 
         public function get($request, $response)
     {
-        die('get');
+                //get article id
+        $routeParams = $request->getAttribute('routeInfo')[2];
+        //find in database
+        $user=new User;
+        $userResult=$user->find($routeParams['id']);
+
+        //if article not found redirect back with 404 status
+        if(empty($userResult)){
+            return $this->fastResponse(null,404 ,$response);
+        }
+        //else get response body and send response in json format
+        return $this->fastResponse((new UserPresenter($userResult))->present(), 200, $response);
     }
 
     //post request on users create new user
@@ -26,6 +37,7 @@ class UserController extends Controller
         $user->lastname=$data['lastname'];
         $user->password=$data['password'];
         $user->save();
+        var_dump($user->firstname);
         return $this->fastResponse((new UserPresenter($user))->present(), 200, $response);
 
     }

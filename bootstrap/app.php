@@ -37,10 +37,6 @@ $capsule->bootEloquent();
 $container['db'] = function ($container) use ($capsule){
 };
 
-$container['ArticleController'] = function ($container){
-    return new \App\Controllers\ArticleController($container);
-};
-
 $container['UserController'] = function ($container){
     return new \App\Controllers\UserController($container);
 };
