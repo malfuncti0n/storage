@@ -1,6 +1,7 @@
 <?php
 header('Access-Control-Allow-Origin: *');
-//composer autoload
+header('Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept');
+
 require __DIR__ . '/../vendor/autoload.php';
 
 //configuration values
