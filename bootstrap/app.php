@@ -1,5 +1,5 @@
 <?php
-
+header('Access-Control-Allow-Origin: *');
 //composer autoload
 require __DIR__ . '/../vendor/autoload.php';
 
