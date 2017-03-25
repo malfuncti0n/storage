@@ -16,6 +16,9 @@ class UserController extends Controller
         $routeParams = $request->getAttribute('routeInfo')[2];
         //find in database
         $user=new User;
+        if(is_null($routeParams['id'])){
+            return $this->fastResponse(null,403 ,$response);
+        }
         $userResult=$user->find($routeParams['id']);
 
         //if article not found redirect back with 404 status
