@@ -41,6 +41,11 @@ $container['ArticleController'] = function ($container){
     return new \App\Controllers\ArticleController($container);
 };
 
+$container['UserController'] = function ($container){
+    return new \App\Controllers\UserController($container);
+};
+
+
 //midleware to change content type in all
 $app->add(new \App\Middleware\JsonResponseMiddleware);
 
