@@ -33,7 +33,7 @@ class Controller
         $body = $response->getBody();
         $body->write($content);
 
-        return $this->response->withStatus($httpStatus)->withBody($body);
+        return $this->response->withStatus($httpStatus)->withBody($body)->withHeader('Content-Type', 'application/json');
     }
 
      //get all routes on current controller and call the apropriate method if allowed

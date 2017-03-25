@@ -47,6 +47,6 @@ $container['UserController'] = function ($container){
 
 
 //midleware to change content type in all
-$app->add(new \App\Middleware\JsonResponseMiddleware);
+//$app->add(new \App\Middleware\JsonResponseMiddleware);
 
 require __DIR__ . '/../app/routes.php';
