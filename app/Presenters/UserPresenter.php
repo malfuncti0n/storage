@@ -6,6 +6,7 @@ class UserPresenter extends BasePresenter{
     public function format(){
         return [
             'id' => $this->data->id,
+            'token' => $this->data->token,
             'email' => $this->data->email,
             'username' => $this->data->username,
             'firstname' => $this->data->firstname,

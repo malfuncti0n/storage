@@ -6,6 +6,9 @@ require __DIR__ . '/../vendor/autoload.php';
 
 //configuration values
 use Noodlehaus\Config;
+//validator
+use Respect\Validation\Validator as v;
+
 
 $config = new Config(__DIR__ . '/../app/config');
 
@@ -38,10 +41,18 @@ $capsule->bootEloquent();
 $container['db'] = function ($container) use ($capsule){
 };
 
+$container['validator'] = function ($container){
+    return new App\Validation\Validator;
+};
+
 $container['UserController'] = function ($container){
     return new \App\Controllers\UserController($container);
 };
 
+
+
+//load valitation with custom rules
+v::with('App\\Validation\\Rules\\');
 
 //midleware to change content type in all
 //$app->add(new \App\Middleware\JsonResponseMiddleware);
