@@ -40,7 +40,6 @@ class UserController extends Controller
         $user->lastname=$data['lastname'];
         $user->password=$data['password'];
         $user->save();
-        var_dump($user->firstname);
         return $this->fastResponse((new UserPresenter($user))->present(), 200, $response);
 
     }
