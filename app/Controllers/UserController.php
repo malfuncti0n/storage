@@ -19,8 +19,9 @@ class UserController extends Controller
         public function get($request, $response)
     {
          //get url parameters
-        $routeParams = $request->getAttribute('routeInfo')[2];
+        $routeParams = $request->getQueryParams();
         // check if emty
+ 
         $validation = $this->validator->validateArray((array)$routeParams, [
         'username' => v::noWhitespace()->notEmpty(),
         'password' => v::noWhitespace()->notEmpty(),
@@ -59,7 +60,7 @@ class UserController extends Controller
     //post request on users create new user
     public function post($request, $response){
         //get json data
-        $json = $this->request->getBody();
+        $json = $request->getBody();
         $data = json_decode($json, true);
 
         //validate data
