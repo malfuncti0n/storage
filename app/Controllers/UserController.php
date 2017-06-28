@@ -19,11 +19,11 @@ class UserController extends Controller
         public function get($request, $response)
     {
          //get url parameters
-        $routeParams = $request->getQueryParams();
+        $routeParams = $request->getAttribute('routeInfo')[2];
         // check if emty
- 
+
         $validation = $this->validator->validateArray((array)$routeParams, [
-        'username' => v::noWhitespace()->notEmpty(),
+        'id' => v::noWhitespace()->notEmpty(),
         'password' => v::noWhitespace()->notEmpty(),
         ]);
 
@@ -37,14 +37,14 @@ class UserController extends Controller
         $user=new User;
 
         //find user in database
-        $userResult=$user->where('username', $routeParams['username'])->first();
+        $userResult=$user->where('id', $routeParams['id'])->first();
 
         //if user not found redirect back with 404 status not fount
         if(empty($userResult)){
             return $this->fastResponse((new ErrorPresenter(['message' =>'No such user'])),404 ,$response);
         }
 
-        $password_hashed = crypt(md5($routeParams['password']),md5($routeParams['username']));
+        $password_hashed = crypt(md5($routeParams['password']),md5($userResult->username));
 
         //if password match
         if ( $userResult->password == $password_hashed) {
@@ -96,7 +96,19 @@ class UserController extends Controller
     }
 
     public function put($request, $response){
-       die('put');
+        $json = $request->getBody();
+        $data = json_decode($json, true);
+        var_dump($data);
+
+        //validate data
+        $validation = $this->validator->validateArray((array)$data, [
+            'email' => v::noWhitespace()->notEmpty()->email()->emailAvailable(),
+            'username'=> v::notEmpty()->alpha()->unameAvailable(),
+            'firstname'=> v::notEmpty()->alpha(),
+            'lastname'=> v::notEmpty()->alpha(),
+            'password' => v::noWhitespace()->notEmpty(),
+        ]);
+
     }
 
     public function delete($request, $response){
