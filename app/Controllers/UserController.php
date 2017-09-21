@@ -109,12 +109,12 @@ class UserController extends Controller
     public function post($request, $response){
         //get json data
         $json = $request->getBody();
+       // $data = json_decode($json, true);
         $data = json_decode($json, true);
-
         //validate data
          $validation = $this->validator->validateArray((array)$data, [
         'email' => v::noWhitespace()->notEmpty()->email()->emailAvailable(),
-        'username'=> v::notEmpty()->alpha()->unameAvailable(),
+        'username'=> v::notEmpty()->unameAvailable(),
         'firstname'=> v::notEmpty()->alpha(),
         'lastname'=> v::notEmpty()->alpha(),
         'password' => v::noWhitespace()->notEmpty(),
@@ -141,9 +141,18 @@ class UserController extends Controller
         $user->loginType=$data['loginType'];
         $user->password=$password_hashed;
        // $user->token=bin2hex($data['email']);
+
         $user->save();
         $user->message='succesfully created';
+
             //token creation for logged in
+
+                    //create a web token to send with the response
+            $tokenId    = base64_encode(random_bytes(32)); //random id
+            $issuedAt   = time();
+            $notBefore  = $issuedAt + 10;  //Adding 10 seconds
+            $expire     = $notBefore + 7200; // Adding 7200 seconds
+            $serverName ='https://api-storage.herokuapp.com/';
                     $data = [
                     'iat'  => $issuedAt,         // Issued at: time when the token was generated
                     'jti'  => $tokenId,          // Json Token Id: an unique identifier for the token
