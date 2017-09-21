@@ -63,34 +63,8 @@ class UserController extends Controller
             // get response body and send response in json format
 
             //create a web token to send with the response
-            $tokenId    = base64_encode(random_bytes(32)); //random id
-            $issuedAt   = time();
-            $notBefore  = $issuedAt + 10;  //Adding 10 seconds
-            $expire     = $notBefore + 7200; // Adding 7200 seconds
-            $serverName ='https://api-storage.herokuapp.com/';
 
-            $data = [
-                    'iat'  => $issuedAt,         // Issued at: time when the token was generated
-                    'jti'  => $tokenId,          // Json Token Id: an unique identifier for the token
-                    'iss'  => $serverName,       // Issuer
-                    'nbf'  => $notBefore,        // Not before
-                    'exp'  => $expire,           // Expire
-                    'data' => [                  // Data related to the logged user you can set your required data
-				    'id'   => $userResult->id   , // id from the users table
-				    'username' => $userResult->username, //  username
-                    'email'=> $userResult->email
-                                  ]
-                    ];
-
-            //here is happend the creation
-
-              $jwt = JWT::encode(
-                            $data, //Data to be encoded in the JWT
-                            $this->_secretKey, // The signing key
-                            $this->_algorithm
-                           );
-
-            $userResult->token=$jwt;
+            $userResult->token=$this->getToken($userResult);
             $userResult->message='succesfully logged in';
             $body->write((new UserPresenter($userResult))->present());
             return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
@@ -145,36 +119,12 @@ class UserController extends Controller
         $user->save();
         $user->message='succesfully created';
 
-            //token creation for logged in
 
-                    //create a web token to send with the response
-            $tokenId    = base64_encode(random_bytes(32)); //random id
-            $issuedAt   = time();
-            $notBefore  = $issuedAt + 10;  //Adding 10 seconds
-            $expire     = $notBefore + 7200; // Adding 7200 seconds
-            $serverName ='https://api-storage.herokuapp.com/';
-                    $data = [
-                    'iat'  => $issuedAt,         // Issued at: time when the token was generated
-                    'jti'  => $tokenId,          // Json Token Id: an unique identifier for the token
-                    'iss'  => $serverName,       // Issuer
-                    'nbf'  => $notBefore,        // Not before
-                    'exp'  => $expire,           // Expire
-                    'data' => [                  // Data related to the logged user you can set your required data
-				    'id'   => $userResult->id   , // id from the users table
-				    'username' => $userResult->username, //  username
-                    'email'=> $userResult->email
-                                  ]
-                    ];
 
-            //here is happend the creation
+        //token creation for logged in
+        $user->token=$this->getToken($user);
 
-              $jwt = JWT::encode(
-                            $data, //Data to be encoded in the JWT
-                            $this->_secretKey, // The signing key
-                            $this->_algorithm
-                           );
-
-        $user->token=$jwt;
+        //create output
         $body->write((new UserPresenter($user))->present());
         return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
        // return $this->fastResponse((new UserPresenter($user))->present(), 200, $response);
@@ -194,6 +144,45 @@ class UserController extends Controller
             'lastname'=> v::notEmpty()->alpha(),
             'password' => v::noWhitespace()->notEmpty(),
         ]);
+
+    }
+
+    /**
+     * function to generate a tokken
+     *
+     * @param return string
+     */
+
+    public function getToken($user){
+
+        //create a web token to send with the response
+        $tokenId    = base64_encode(random_bytes(32)); //random id
+        $issuedAt   = time();
+        $notBefore  = $issuedAt + 10;  //Adding 10 seconds
+        $expire     = $notBefore + 7200; // Adding 7200 seconds
+        $serverName ='https://api-storage.herokuapp.com/';
+        $data = [
+            'iat'  => $issuedAt,         // Issued at: time when the token was generated
+            'jti'  => $tokenId,          // Json Token Id: an unique identifier for the token
+            'iss'  => $serverName,       // Issuer
+            'nbf'  => $notBefore,        // Not before
+            'exp'  => $expire,           // Expire
+            'data' => [                  // Data related to the logged user you can set your required data
+                'id'   => $user->id   , // id from the users table
+                'username' => $user->username, //  username
+                'email'=> $user->email
+            ]
+        ];
+
+        //here is happen the creation
+
+        $jwt = JWT::encode(
+            $data, //Data to be encoded in the JWT
+            $this->_secretKey, // The signing key
+            $this->_algorithm
+        );
+        return $jwt;
+
 
     }
 
