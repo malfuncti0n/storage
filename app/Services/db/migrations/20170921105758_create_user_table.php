@@ -39,6 +39,7 @@ class CreateUserTable extends AbstractMigration
               ->addColumn('created_at', 'timestamp', array('default' => 'CURRENT_TIMESTAMP'))
               ->addColumn('updated_at', 'timestamp', array('null' => true))
               ->addIndex(array('email'), array('unique' => true))
+              ->addIndex(array('username'), array('unique' => true))
               ->save();
     }
     public function down(){

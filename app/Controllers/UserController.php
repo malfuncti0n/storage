@@ -23,7 +23,7 @@ class UserController extends Controller
         // check if emty
 
         $validation = $this->validator->validateArray((array)$routeParams, [
-        'id' => v::noWhitespace()->notEmpty(),
+        'username' => v::noWhitespace()->notEmpty(),
         'password' => v::noWhitespace()->notEmpty(),
         ]);
 
@@ -37,7 +37,7 @@ class UserController extends Controller
         $user=new User;
 
         //find user in database
-        $userResult=$user->where('id', $routeParams['id'])->first();
+        $userResult=$user->where('username', $routeParams['username'])->first();
 
         //if user not found redirect back with 404 status not fount
         if(empty($userResult)){
