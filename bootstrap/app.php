@@ -49,6 +49,10 @@ $container['UserController'] = function ($container){
     return new \App\Controllers\UserController($container);
 };
 
+$container['FacebookController'] = function ($container){
+    return new \App\Controllers\FacebookController($container);
+};
+
 
 
 //load valitation with custom rules
