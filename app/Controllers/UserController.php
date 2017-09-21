@@ -27,10 +27,15 @@ class UserController extends Controller
         'password' => v::noWhitespace()->notEmpty(),
         ]);
 
+
+        $body = $response->getBody();
         if ($validation->failed())
         {
             //if validation failed response back with the failure(bad request)
-            return $this->fastResponse((new ErrorPresenter(['message' =>'Wrong input data']))->present(),400 ,$response);
+          //  return $this->fastResponse((new ErrorPresenter(['message' =>'Wrong input data']))->present(),400 ,$response);
+
+            $body->write((new ErrorPresenter(['message' =>'data validation fail']))->present());
+            return $this->response->withStatus(400)->withBody($body)->withHeader('Content-Type', 'application/json');
         }
 
         //initialize new object
@@ -41,7 +46,9 @@ class UserController extends Controller
 
         //if user not found redirect back with 404 status not fount
         if(empty($userResult)){
-            return $this->fastResponse((new ErrorPresenter(['message' =>'No such user'])),404 ,$response);
+            $body->write((new ErrorPresenter(['message' =>'No such user']))->present());
+            return $this->response->withStatus(404)->withBody($body)->withHeader('Content-Type', 'application/json');
+            //return $this->fastResponse((new ErrorPresenter(['message' =>'No such user'])),404 ,$response);
         }
 
         $password_hashed = crypt(md5($routeParams['password']),md5($userResult->username));
@@ -49,10 +56,14 @@ class UserController extends Controller
         //if password match
         if ( $userResult->password == $password_hashed) {
             // get response body and send response in json format
-            return $this->fastResponse((new UserPresenter($userResult))->present(), 200, $response);
+            $body->write((new UserPresenter($userResult))->present());
+            return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
+           // return $this->fastResponse((new UserPresenter($userResult))->present(), 200, $response);
         }
         //else response for wrong password
-        return $this->fastResponse((new ErrorPresenter(['message' =>'Wrong Password']))->present(),400 ,$response);
+        $body->write((new ErrorPresenter(['message' =>'Wrong Password']))->present());
+        return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
+       // return $this->fastResponse((new ErrorPresenter(['message' =>'Wrong Password']))->present(),400 ,$response);
 
 
     }
@@ -72,10 +83,12 @@ class UserController extends Controller
         'password' => v::noWhitespace()->notEmpty(),
         ]);
 
+        $body = $response->getBody();
         if ($validation->failed())
         {
             //if validation failed response back with the failure
-            return $this->fastResponse((new ErrorPresenter(['message' =>'data validation failed']))->present(),400 ,$response);
+            $body->write((new ErrorPresenter(['message' =>'data validation fail']))->present());
+            return $this->response->withStatus(400)->withBody($body)->withHeader('Content-Type', 'application/json');
         }
 
 
@@ -91,7 +104,9 @@ class UserController extends Controller
         $user->password=$password_hashed;
         $user->token=bin2hex($data['email']);
         $user->save();
-        return $this->fastResponse((new UserPresenter($user))->present(), 200, $response);
+        $body->write((new UserPresenter($user))->present());
+        return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
+       // return $this->fastResponse((new UserPresenter($user))->present(), 200, $response);
 
     }
 

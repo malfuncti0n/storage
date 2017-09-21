@@ -32,6 +32,7 @@ class CreateUserTable extends AbstractMigration
         $users->addColumn('firstname', 'string', array('limit' => 50))
               ->addColumn('lastname', 'string', array('limit' => 50))
               ->addColumn('email', 'string', array('limit' => 50))
+              ->addColumn('loginType', 'string', array('limit' => 50,'null' =>true))
               ->addColumn('username', 'string', array('limit' => 50,'null' =>true))
               ->addColumn('token', 'string', array('limit' => 255,'null' =>true))
               ->addColumn('verified', 'integer', array('limit' => MysqlAdapter::INT_TINY,'default'=>0))
