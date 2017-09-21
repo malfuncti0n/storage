@@ -142,6 +142,7 @@ class UserController extends Controller
         $user->password=$password_hashed;
        // $user->token=bin2hex($data['email']);
         $user->save();
+        $user->message='succesfully created';
         $body->write((new UserPresenter($user))->present());
         return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
        // return $this->fastResponse((new UserPresenter($user))->present(), 200, $response);
