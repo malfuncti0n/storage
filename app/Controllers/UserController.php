@@ -10,9 +10,14 @@ use App\Presenters\ErrorPresenter;
 
 use Respect\Validation\Validator as v;
 
+use \Firebase\JWT\JWT;
+
 class UserController extends Controller
 {
     private $_cost = 10;
+    //variables for jwt token
+    private $_secretKey='secret';
+    private $_algorithm='HS512';
 
 
 
@@ -56,10 +61,42 @@ class UserController extends Controller
         //if password match
         if ( $userResult->password == $password_hashed) {
             // get response body and send response in json format
+
+            //create a web token to send with the response
+            $tokenId    = base64_encode(random_bytes(32)); //random id
+            $issuedAt   = time();
+            $notBefore  = $issuedAt + 10;  //Adding 10 seconds
+            $expire     = $notBefore + 7200; // Adding 7200 seconds
+            $serverName ='https://api-storage.herokuapp.com/';
+
+            $data = [
+                    'iat'  => $issuedAt,         // Issued at: time when the token was generated
+                    'jti'  => $tokenId,          // Json Token Id: an unique identifier for the token
+                    'iss'  => $serverName,       // Issuer
+                    'nbf'  => $notBefore,        // Not before
+                    'exp'  => $expire,           // Expire
+                    'data' => [                  // Data related to the logged user you can set your required data
+				    'id'   => $userResult->id   , // id from the users table
+				    'username' => $userResult->username, //  username
+                    'email'=> $userResult->email
+                                  ]
+                    ];
+
+            //here is happend the creation
+
+              $jwt = JWT::encode(
+                            $data, //Data to be encoded in the JWT
+                            $this->_secretKey, // The signing key
+                            $this->_algorithm
+                           );
+
+            $userResult->token=$jwt;
+            $userResult->message='succesfully logged in';
             $body->write((new UserPresenter($userResult))->present());
             return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
            // return $this->fastResponse((new UserPresenter($userResult))->present(), 200, $response);
         }
+
         //else response for wrong password
         $body->write((new ErrorPresenter(['message' =>'Wrong Password']))->present());
         return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
@@ -101,8 +138,9 @@ class UserController extends Controller
         $user->username=$data['username'];
         $user->firstname=$data['firstname'];
         $user->lastname=$data['lastname'];
+        $user->loginType=$data['loginType'];
         $user->password=$password_hashed;
-        $user->token=bin2hex($data['email']);
+       // $user->token=bin2hex($data['email']);
         $user->save();
         $body->write((new UserPresenter($user))->present());
         return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');

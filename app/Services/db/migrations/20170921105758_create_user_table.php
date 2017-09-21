@@ -34,7 +34,6 @@ class CreateUserTable extends AbstractMigration
               ->addColumn('email', 'string', array('limit' => 50))
               ->addColumn('loginType', 'string', array('limit' => 50,'null' =>true))
               ->addColumn('username', 'string', array('limit' => 50,'null' =>true))
-              ->addColumn('token', 'string', array('limit' => 255,'null' =>true))
               ->addColumn('verified', 'integer', array('limit' => MysqlAdapter::INT_TINY,'default'=>0))
               ->addColumn('password', 'string', array('limit' => 255))
               ->addColumn('created_at', 'timestamp', array('default' => 'CURRENT_TIMESTAMP'))

@@ -5,6 +5,7 @@ namespace App\Presenters;
 class UserPresenter extends BasePresenter{
     public function format(){
         return [
+            'message'=>$this->data->message,
             'id' => $this->data->id,
             'token' => $this->data->token,
             'email' => $this->data->email,

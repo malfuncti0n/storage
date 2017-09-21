@@ -13,7 +13,6 @@ class User extends Model{
         'firstname',
         'lastname',
         'password',
-        'token',
         'loginType'
     ];
 
