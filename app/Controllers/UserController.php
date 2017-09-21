@@ -143,6 +143,29 @@ class UserController extends Controller
        // $user->token=bin2hex($data['email']);
         $user->save();
         $user->message='succesfully created';
+            //token creation for logged in
+                    $data = [
+                    'iat'  => $issuedAt,         // Issued at: time when the token was generated
+                    'jti'  => $tokenId,          // Json Token Id: an unique identifier for the token
+                    'iss'  => $serverName,       // Issuer
+                    'nbf'  => $notBefore,        // Not before
+                    'exp'  => $expire,           // Expire
+                    'data' => [                  // Data related to the logged user you can set your required data
+				    'id'   => $userResult->id   , // id from the users table
+				    'username' => $userResult->username, //  username
+                    'email'=> $userResult->email
+                                  ]
+                    ];
+
+            //here is happend the creation
+
+              $jwt = JWT::encode(
+                            $data, //Data to be encoded in the JWT
+                            $this->_secretKey, // The signing key
+                            $this->_algorithm
+                           );
+
+        $userResult->token=$jwt;
         $body->write((new UserPresenter($user))->present());
         return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
        // return $this->fastResponse((new UserPresenter($user))->present(), 200, $response);
