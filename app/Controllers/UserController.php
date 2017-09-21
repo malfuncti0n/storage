@@ -165,7 +165,7 @@ class UserController extends Controller
                             $this->_algorithm
                            );
 
-        $userResult->token=$jwt;
+        $user->token=$jwt;
         $body->write((new UserPresenter($user))->present());
         return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
        // return $this->fastResponse((new UserPresenter($user))->present(), 200, $response);
