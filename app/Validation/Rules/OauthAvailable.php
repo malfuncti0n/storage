@@ -11,7 +11,8 @@ class OauthAvailable extends AbstractRule
         'api',
         'facebook',
         'twitter',
-        'google'
+        'google',
+        'FORM'
     ];
 
     public function validate($input)
