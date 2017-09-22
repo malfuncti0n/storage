@@ -17,8 +17,8 @@ class UserController extends Controller
 {
     private $_cost = 10;
     //variables for jwt token
-    private $_secretKey='secret';
-    private $_algorithm='HS512';
+    private $_secretKey='secret', $_facebookPassword='';
+    private $_algorithm='HS512',$_method;
 
 
 
@@ -83,21 +83,104 @@ class UserController extends Controller
 
     //post request on users create new user
     public function post($request, $response){
+
+
+        //we will change this function to support multiple account creation first we check the  api logiType and we call  apropriate method
         //get json data
         $json = $request->getBody();
        // $data = json_decode($json, true);
         $data = json_decode($json, true);
+
+        $validation = $this->validator->validateArray((array)$data, [
+            'loginType' =>v::notEmpty()->oauthAvailable(),
+        ]);
+        //if no loginType exist, failure.
+        $body = $response->getBody();
+        if ($validation->failed())
+        {
+            //if validation failed response back with the failure
+            $body->write((new ErrorPresenter(['message' =>'Your call must have an allowed method']))->present());
+            return $this->response->withStatus(400)->withBody($body)->withHeader('Content-Type', 'application/json');
+        }
+
+        //if no failed call the apropriate method (form and api is the same )
+        $this->_method=($data['loginType']=='FORM' ? 'api' :$data['loginType'] );
+
+        //we have the method so we can register the user
+        switch ($this->_method) {
+            case 'api':
+                $this->apiCreateUser($request, $response, $data);
+                break;
+            case 'facebook':
+                $this->facebookCreateUser($request, $response, $data);
+            case 2:
+                echo "i equals 2";
+                break;
+        }
+
+
+
+    }
+
+    public function facebookCreateUser($request, $response, $data){
+        //this function is a bit different for from apiCreateUser/ we have no password to store to user and this function is call when login also from fb
+        $body = $response->getBody();
         //validate data
-         $validation = $this->validator->validateArray((array)$data, [
-             'email' => v::noWhitespace()->notEmpty()->email()->emailAvailable(),
-             'username'=> v::notEmpty()->unameAvailable(),
-             'firstname'=> v::notEmpty()->alpha(),
-             'lastname'=> v::notEmpty()->alpha(),
-             'loginType' =>v::notEmpty()->oauthAvailable(),
-             'password' => v::noWhitespace()->notEmpty(),
+        $validation = $this->validator->validateArray((array)$data, [
+            'email' => v::noWhitespace()->notEmpty()->email()->emailAvailable(),
+            'shortname'=> v::notEmpty()->unameAvailable(),
+            'firstname'=> v::notEmpty()->alpha(),
+            'lastname'=> v::notEmpty()->alpha()
         ]);
 
+        if ($validation->failed())
+        {
+            //if validation failed response back with the failure
+            $body->write((new ErrorPresenter(['message' =>'data validation fail for fb user']))->present());
+            return $this->response->withStatus(400)->withBody($body)->withHeader('Content-Type', 'application/json');
+        }
+        //create the user
+        $user = new User;
+        $user->email=$data['email'];
+        $user->username=$data['shortname'];
+        $user->firstname=$data['firstname'];
+        $user->lastname=$data['lastname'];
+        $user->save();
+        //save also the account type
+        $user_account=new User_account;
+        $user_account->user_id=$user->id;
+        $user_account->provider=$data['loginType'];
+        $user_account->puid=$data['puid'];
+
+        $user->user_accounts()->save($user_account);
+        $user->message='succesfully created';
+
+
+
+
+        //token creation for logged in
+        $user->token=$this->getToken($user);
+
+        //create output
+        $body->write((new UserPresenter($user))->present());
+        return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
+
+
+    }
+
+    public function apiCreateUser($request, $response, $data){
+
         $body = $response->getBody();
+        //validate data
+        $validation = $this->validator->validateArray((array)$data, [
+            'email' => v::noWhitespace()->notEmpty()->email()->emailAvailable(),
+            'username'=> v::notEmpty()->unameAvailable(),
+            'firstname'=> v::notEmpty()->alpha(),
+            'lastname'=> v::notEmpty()->alpha(),
+            'password' => v::noWhitespace()->notEmpty(),
+        ]);
+
+
         if ($validation->failed())
         {
             //if validation failed response back with the failure
@@ -108,7 +191,7 @@ class UserController extends Controller
 
         // Hash the password with the salt
         $password_hashed = crypt(md5($data['password']),md5($data['username']));
-       // $password_hashed = password_hash($data['username'], PASSWORD_DEFAULT);
+        // $password_hashed = password_hash($data['username'], PASSWORD_DEFAULT);
         //else create new user
         $user = new User;
         $user->email=$data['email'];
@@ -116,7 +199,7 @@ class UserController extends Controller
         $user->firstname=$data['firstname'];
         $user->lastname=$data['lastname'];
         $user->password=$password_hashed;
-       // $user->token=bin2hex($data['email']);
+        // $user->token=bin2hex($data['email']);
 
         $user->save();
         //save also the account type
@@ -137,7 +220,6 @@ class UserController extends Controller
         //create output
         $body->write((new UserPresenter($user))->present());
         return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
-       // return $this->fastResponse((new UserPresenter($user))->present(), 200, $response);
 
     }
 
