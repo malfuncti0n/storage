@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\User;
+use App\Models\User_account;
 
 use App\Presenters\UserPresenter;
 
@@ -18,6 +19,7 @@ class UserController extends Controller
     //variables for jwt token
     private $_secretKey='secret';
     private $_algorithm='HS512';
+
 
 
 
@@ -87,11 +89,12 @@ class UserController extends Controller
         $data = json_decode($json, true);
         //validate data
          $validation = $this->validator->validateArray((array)$data, [
-        'email' => v::noWhitespace()->notEmpty()->email()->emailAvailable(),
-        'username'=> v::notEmpty()->unameAvailable(),
-        'firstname'=> v::notEmpty()->alpha(),
-        'lastname'=> v::notEmpty()->alpha(),
-        'password' => v::noWhitespace()->notEmpty(),
+             'email' => v::noWhitespace()->notEmpty()->email()->emailAvailable(),
+             'username'=> v::notEmpty()->unameAvailable(),
+             'firstname'=> v::notEmpty()->alpha(),
+             'lastname'=> v::notEmpty()->alpha(),
+             'loginType' =>v::notEmpty()->oauthAvailable(),
+             'password' => v::noWhitespace()->notEmpty(),
         ]);
 
         $body = $response->getBody();
@@ -112,12 +115,19 @@ class UserController extends Controller
         $user->username=$data['username'];
         $user->firstname=$data['firstname'];
         $user->lastname=$data['lastname'];
-        $user->loginType=$data['loginType'];
         $user->password=$password_hashed;
        // $user->token=bin2hex($data['email']);
 
         $user->save();
+        //save also the account type
+        $user_account=new User_account;
+        $user_account->user_id=$user->id;
+        $user_account->provider=$data['loginType'];
+        $user_account->puid=$user->id;
+
+        $user->user_accounts()->save($user_account);
         $user->message='succesfully created';
+
 
 
 
