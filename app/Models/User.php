@@ -16,4 +16,8 @@ class User extends Model{
         'loginType'
     ];
 
+    public function user_accounts(){
+        return $this->hasMany('App\Models\User_account');
+    }
+
 }

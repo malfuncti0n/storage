@@ -9,6 +9,6 @@ class CodeExist extends AbstractRule
 {
     public function validate($input)
     {
-        return User::where('token', $input)->count() > 0;
+        return is_in > 0;
     }
 }
