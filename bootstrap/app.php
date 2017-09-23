@@ -55,6 +55,10 @@ $container['FacebookController'] = function ($container){
 
 
 
+$container['msg'] = function ($container){
+    return new \App\Services\Mailer;
+};
+
 //load valitation with custom rules
 v::with('App\\Validation\\Rules\\');
 

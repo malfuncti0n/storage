@@ -1,6 +1,7 @@
 <?php
 namespace App\Services;
-use PHPMailer;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 use Noodlehaus\Config;
 
 class Mailer {

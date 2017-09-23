@@ -202,6 +202,28 @@ class UserController extends Controller
         $user_account->puid=$data['puid'];
 
         $user->user_accounts()->save($user_account);
+
+        //in the user creation from any social media, we will crate and a local (api) account.
+        // we do this to avoid conflicts with email existance on registration.
+        $user_account=new User_account;
+        $user_account->user_id=$user->id;
+        $user_account->provider='api';
+        $user_account->puid=$user->id;
+        $user->user_accounts()->save($user_account);
+
+        //we will also generate a random password for this user.
+        //so the user can login with form if he want.
+        $password=rand(1000000,999999999);
+        $password_hashed = crypt(md5($password),md5($user->username));
+        $user->password=$password_hashed;
+        $user->save();
+        //and finaly we send that password to users email
+
+        $sendEmail= $user->email;
+        $subject="New password created";
+        $message="your new password for site login is: $password";
+        $this->msg->sendMail($sendEmail, $message, $subject) ;
+
         $user->message='succesfully created';
 
 
