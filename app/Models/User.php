@@ -13,7 +13,6 @@ class User extends Model{
         'firstname',
         'lastname',
         'password',
-        'loginType'
     ];
 
     public function user_accounts(){

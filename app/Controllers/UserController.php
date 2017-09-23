@@ -202,9 +202,6 @@ class UserController extends Controller
         $user->username=$data['username'];
         $user->firstname=$data['firstname'];
         $user->lastname=$data['lastname'];
-
-        $user->loginType=!is_null($data['loginType']) ?$data['loginType'] :$oauthProvider  ;
-
         $user->password=$password_hashed;
         // $user->token=bin2hex($data['email']);
 
