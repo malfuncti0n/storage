@@ -11,6 +11,8 @@ use App\Presenters\ErrorPresenter;
 
 use Respect\Validation\Validator as v;
 
+use Illuminate\Database\Capsule\Manager as DB;
+
 use \Firebase\JWT\JWT;
 
 class UserController extends Controller
@@ -117,6 +119,7 @@ class UserController extends Controller
                 break;
             case 'facebook':
                 $this->facebookCreateUser($request, $response, $data);
+                break;
             case 2:
                 echo "i equals 2";
                 break;
@@ -125,14 +128,18 @@ class UserController extends Controller
 
 
     }
-
+    //function to create user for facebook signed in
     public function facebookCreateUser($request, $response, $data){
         //this function is a bit different for from apiCreateUser/ we have no password to store to user and this function is call when login also from fb
+        //so in every requist we need 2 check 2 thinks: if user exist with the same authentication system we just loged in him
+        //if user exist with different auth system we need to merge the accounts.
+
+
         $body = $response->getBody();
         //validate data
         $validation = $this->validator->validateArray((array)$data, [
-            'email' => v::noWhitespace()->notEmpty()->email()->emailAvailable(),
-            'shortname'=> v::notEmpty()->unameAvailable(),
+            'email' => v::noWhitespace()->notEmpty()->email(),
+            'shortname'=> v::notEmpty(),
             'firstname'=> v::notEmpty()->alpha(),
             'lastname'=> v::notEmpty()->alpha()
         ]);
@@ -143,7 +150,45 @@ class UserController extends Controller
             $body->write((new ErrorPresenter(['message' =>'data validation fail for fb user']))->present());
             return $this->response->withStatus(400)->withBody($body)->withHeader('Content-Type', 'application/json');
         }
-        //create the user
+
+        // fist we check if the user exist with the same authentication method if yes we logged in him
+
+        if(DB::table('users')->join('user_accounts', 'users.id', '=', 'user_accounts.user_id')
+            ->where('user_accounts.provider', '=', $data['loginType'])
+            ->where('users.email', '=', $data['email'])->select('users.*', 'user_accounts.*')
+            ->exists()){
+
+            // user exist with the same auth method, so loged in him
+            $user=new User();
+            $userResult=$user->where('email', $data['email'])->first();
+            $userResult->token=$this->getToken($userResult);
+            $userResult->message='succesfully logged in';
+            $body->write((new UserPresenter($userResult))->present());
+            return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
+
+        }elseif(User::where('email',$data['email'])){ //now we check if user exist with different auth method
+        //then the user exist with a different auth method. we attach the new auth method and we loged in him
+            $user=new User();
+            //first get the id of the existing user
+            $userResult=$user->where('email', $data['email'])->first();
+            //create new auth object
+            $user_account=new User_account;
+            $user_account->user_id=$userResult->id;
+            $user_account->provider=$data['loginType'];
+            $user_account->puid=$data['puid'];
+            //save the object
+            $userResult->user_accounts()->save($user_account);
+
+            //login the user
+            $userResult->token=$this->getToken($userResult);
+            $userResult->message='New authentication methd created. Succesfully logged in';
+            $body->write((new UserPresenter($userResult))->present());
+            return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
+        }
+
+        //if none of the above, we will create the user its not exist
+
+
         $user = new User;
         $user->email=$data['email'];
         $user->username=$data['shortname'];
@@ -172,13 +217,14 @@ class UserController extends Controller
 
     }
 
+    //function to create user from api calls
     public function apiCreateUser($request, $response, $data){
 
         $body = $response->getBody();
         //validate data
         $validation = $this->validator->validateArray((array)$data, [
-            'email' => v::noWhitespace()->notEmpty()->email()->emailAvailable(),
-            'username'=> v::notEmpty()->unameAvailable(),
+            'email' => v::noWhitespace()->notEmpty()->email(),
+            'username'=> v::notEmpty(),
             'firstname'=> v::notEmpty()->alpha(),
             'lastname'=> v::notEmpty()->alpha(),
             'password' => v::noWhitespace()->notEmpty(),
@@ -191,6 +237,10 @@ class UserController extends Controller
             $body->write((new ErrorPresenter(['message' =>'data validation fail']))->present());
             return $this->response->withStatus(400)->withBody($body)->withHeader('Content-Type', 'application/json');
         }
+
+        // we will first check if user exist with different auth method
+
+
 
 
         // Hash the password with the salt
