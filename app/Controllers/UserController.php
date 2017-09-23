@@ -166,7 +166,7 @@ class UserController extends Controller
             $body->write((new UserPresenter($userResult))->present());
             return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
 
-        }elseif(User::where('email',$data['email'])){ //now we check if user exist with different auth method
+        }elseif(User::where('email',$data['email'])->exists()){ //now we check if user exist with different auth method
         //then the user exist with a different auth method. we attach the new auth method and we loged in him
             $user=new User();
             //first get the id of the existing user
@@ -223,8 +223,8 @@ class UserController extends Controller
         $body = $response->getBody();
         //validate data
         $validation = $this->validator->validateArray((array)$data, [
-            'email' => v::noWhitespace()->notEmpty()->email(),
-            'username'=> v::notEmpty(),
+            'email' => v::noWhitespace()->notEmpty()->email()->emailAvailable(),
+            'username'=> v::notEmpty()->unameAvailable(),
             'firstname'=> v::notEmpty()->alpha(),
             'lastname'=> v::notEmpty()->alpha(),
             'password' => v::noWhitespace()->notEmpty(),
