@@ -12,6 +12,7 @@ class UserPresenter extends BasePresenter{
             'username' => $this->data->username,
             'firstname' => $this->data->firstname,
             'lastname' => $this->data->lastname,
+            'loginType' => $this->data->loginType,
             'User created' => $this->data->created_at
         ];
     }

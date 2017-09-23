@@ -16,8 +16,7 @@ class UserController extends Controller
 {
     private $_cost = 10;
     //variables for jwt token
-    private $_secretKey='secret';
-    private $_algorithm='HS512';
+    private $_secretKey='secret', $_algorithm='HS512', $_serverName ='https://api-storage.herokuapp.com/';
 
 
 
@@ -25,7 +24,8 @@ class UserController extends Controller
     {
          //get url parameters
         $routeParams = $request->getAttribute('routeInfo')[2];
-        // check if emty
+
+        // check if empty
 
         $validation = $this->validator->validateArray((array)$routeParams, [
         'username' => v::noWhitespace()->notEmpty(),
@@ -80,7 +80,7 @@ class UserController extends Controller
     }
 
     //post request on users create new user
-    public function post($request, $response){
+    public function post($request, $response, $oauthProvider="api"){
         //get json data
         $json = $request->getBody();
        // $data = json_decode($json, true);
@@ -112,7 +112,7 @@ class UserController extends Controller
         $user->username=$data['username'];
         $user->firstname=$data['firstname'];
         $user->lastname=$data['lastname'];
-        $user->loginType=$data['loginType'];
+        $user->loginType=!is_null($data['loginType']) ?$data['loginType'] :$oauthProvider  ;
         $user->password=$password_hashed;
        // $user->token=bin2hex($data['email']);
 
@@ -160,11 +160,10 @@ class UserController extends Controller
         $issuedAt   = time();
         $notBefore  = $issuedAt + 10;  //Adding 10 seconds
         $expire     = $notBefore + 7200; // Adding 7200 seconds
-        $serverName ='https://api-storage.herokuapp.com/';
         $data = [
             'iat'  => $issuedAt,         // Issued at: time when the token was generated
             'jti'  => $tokenId,          // Json Token Id: an unique identifier for the token
-            'iss'  => $serverName,       // Issuer
+            'iss'  => $this->_serverName,       // Issuer
             'nbf'  => $notBefore,        // Not before
             'exp'  => $expire,           // Expire
             'data' => [                  // Data related to the logged user you can set your required data
@@ -182,9 +181,8 @@ class UserController extends Controller
             $this->_algorithm
         );
         return $jwt;
-
-
     }
+
 
     public function delete($request, $response){
         die('delete');

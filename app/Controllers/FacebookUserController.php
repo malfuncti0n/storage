@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 
-class FacebookController extends Controller{
+class FacebookUserController extends UserController{
 
     public function post($request, $response){
         var_dump($request->getParsedBody());
