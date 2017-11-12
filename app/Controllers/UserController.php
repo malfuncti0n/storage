@@ -120,6 +120,9 @@ class UserController extends Controller
             case 'facebook':
                 $this->facebookCreateUser($request, $response, $data);
                 break;
+            case 'google':
+                $this->googleCreateUser($request, $response, $data);
+                break;
             case 2:
                 echo "i equals 2";
                 break;
@@ -238,6 +241,117 @@ class UserController extends Controller
 
 
     }
+    
+     //function to create user for facebook signed in
+    public function googleCreateUser($request, $response, $data){
+        //this function is a bit different for from apiCreateUser/ we have no password to store to user and this function is call when login also from fb
+        //so in every requist we need 2 check 2 thinks: if user exist with the same authentication system we just loged in him
+        //if user exist with different auth system we need to merge the accounts.
+
+        $body = $response->getBody();
+        //validate data
+        $validation = $this->validator->validateArray((array)$data, [
+            'email' => v::noWhitespace()->notEmpty()->email(),
+            'firstname'=> v::notEmpty()->alpha(),
+            'lastname'=> v::notEmpty()->alpha()
+        ]);
+
+        if ($validation->failed())
+        {
+            //if validation failed response back with the failure
+            $body->write((new ErrorPresenter(['message' =>'data validation fail for fb user']))->present());
+            return $this->response->withStatus(400)->withBody($body)->withHeader('Content-Type', 'application/json');
+        }
+
+        // fist we check if the user exist with the same authentication method if yes we logged in him
+
+        if(DB::table('users')->join('user_accounts', 'users.id', '=', 'user_accounts.user_id')
+            ->where('user_accounts.provider', '=', $data['loginType'])
+            ->where('users.email', '=', $data['email'])->select('users.*', 'user_accounts.*')
+            ->exists()){
+
+            // user exist with the same auth method, so loged in him
+            $user=new User();
+            $userResult=$user->where('email', $data['email'])->first();
+            $userResult->token=$this->getToken($userResult);
+            $userResult->message='succesfully logged in';
+            $body->write((new UserPresenter($userResult))->present());
+            return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
+
+        }elseif(User::where('email',$data['email'])->exists()){ //now we check if user exist with different auth method
+        //then the user exist with a different auth method. we attach the new auth method and we loged in him
+            $user=new User();
+            //first get the id of the existing user
+            $userResult=$user->where('email', $data['email'])->first();
+            //create new auth object
+            $user_account=new User_account;
+            $user_account->user_id=$userResult->id;
+            $user_account->provider=$data['loginType'];
+            $user_account->puid=$data['uid'];
+            //save the object
+            $userResult->user_accounts()->save($user_account);
+
+            //login the user
+            $userResult->token=$this->getToken($userResult);
+            $userResult->message='New authentication methd created. Succesfully logged in';
+            $body->write((new UserPresenter($userResult))->present());
+            return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
+        }
+
+        //if none of the above, we will create the user its not exist
+
+
+        $user = new User;
+        $user->email=$data['email'];
+        $user->username=$data['shortname'];
+        $user->firstname=$data['firstname'];
+        $user->lastname=$data['lastname'];
+        $user->save();
+        //save also the account type
+        $user_account=new User_account;
+        $user_account->user_id=$user->id;
+        $user_account->provider=$data['loginType'];
+        $user_account->puid=$data['uid'];
+
+        $user->user_accounts()->save($user_account);
+
+        //in the user creation from any social media, we will crate and a local (api) account.
+        // we do this to avoid conflicts with email existance on registration.
+        $user_account=new User_account;
+        $user_account->user_id=$user->id;
+        $user_account->provider='api';
+        $user_account->puid=$user->id;
+        $user->user_accounts()->save($user_account);
+
+        //we will also generate a random password for this user.
+        //so the user can login with form if he want.
+        $password=rand(1000000,999999999);
+        $password_hashed = crypt(md5($password),md5($user->username));
+        $user->password=$password_hashed;
+        $user->save();
+        //and finaly we send that password to users email
+
+        $sendEmail= $user->email;
+        $subject="New password created";
+        $message="your new password for site login is: $password";
+        $this->msg->sendMail($sendEmail, $message, $subject) ;
+
+        $user->message='succesfully created';
+
+
+
+
+        //token creation for logged in
+        $user->token=$this->getToken($user);
+
+        //create output
+        $body->write((new UserPresenter($user))->present());
+        return $this->response->withStatus(200)->withBody($body)->withHeader('Content-Type', 'application/json');
+
+
+    }
+
+    
 
     //function to create user from api calls
     public function apiCreateUser($request, $response, $data){
