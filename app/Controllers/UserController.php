@@ -242,7 +242,7 @@ class UserController extends Controller
 
     }
     
-     //function to create user for facebook signed in
+     //function to create user for google signed in
     public function googleCreateUser($request, $response, $data){
         //this function is a bit different for from apiCreateUser/ we have no password to store to user and this function is call when login also from fb
         //so in every requist we need 2 check 2 thinks: if user exist with the same authentication system we just loged in him
